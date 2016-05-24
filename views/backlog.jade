@@ -68,7 +68,7 @@ block content
                           a(href="#editarHistoria" role="button" class="btn" data-toggle="modal" ng-click="showEditbacklog($index)")
                             i(class="btn-icon-only icon-edit")      
                           if hayProductOwner 
-                            a(href="#aceptarHistoria" role="button" class="btn")
+                            a( role="button" class="btn" ng-click="historyToRelease(item._id)")
                               i(class="btn-icon-only icon-ok-sign")
                             a(href="#rechazarHistoria" role="button" class="btn")
                               i(class="btn-icon-only icon-remove")  

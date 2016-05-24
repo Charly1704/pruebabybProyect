@@ -8,6 +8,7 @@ var app = express();
 var server = require("http").Server(app);
 var io = require("socket.io")(server)
 var historias = [];
+var releaseBacklog = [];
 var bodyParser = require("body-parser");
 var Usuario = require("./models/usuarios").Usuario;
 var Backlog = require("./models/usuarios").Backlog;
@@ -46,7 +47,7 @@ app.use(flash());
 
 io.on('connect',function(socket){
   console.log("Se conecto");
-  socket.emit("enviarMensajes",historias);
+  
   socket.on("mensajeNuevo",function(data){
     historias.push(data);
     io.sockets.emit("enviarMensajes",historias)
@@ -59,6 +60,12 @@ io.on('connect',function(socket){
     }
     io.sockets.emit("enviarMensajes",historias)
   })
+  socket.on("backlogAccepted",function(data) {
+      releaseBacklog.push(data);
+      io.sockets.emit("agregarRelease",releaseBacklog);
+  })
+  socket.emit("enviarMensajes",historias);
+  socket.emit("agregarRelease",releaseBacklog);
 })
 
 
@@ -369,6 +376,9 @@ app.get("/api/backlog/:idProy",function(req, res) {
       console.log(backlog);
       for(var val in backlog) {
          data.push(backlog[val])
+         if(backlog[val].estado){
+           releaseBacklog.push(backlog[val]);
+         }
       }
       historias = backlog;
       res.json(data);
@@ -383,17 +393,10 @@ var hayProductOwner;
           hayProductOwner = false
         }
         else {
-
           hayProductOwner = true;
         }
         console.log(count);
-
-
-
       })
-
-
-
 var data = [];
   Backlog
     .find()
@@ -437,6 +440,15 @@ Backlog.findOneAndUpdate({_id:req.body._id}, nuevosDatos, {upsert:true}, functio
 });
 });
 
+app.post("/api/userHistoryState/:idBacklog",function(req, res) {
+    Backlog.findOneAndUpdate({_id:req.params.idBacklog},{estado:true},function(err,doc){
+      if(err) console.log(String(err));
+      console.log("Backlog agregado a Release");
+      console.log(doc);
+      res.json(doc);
+    })
+})
+
 app.post("/api/backlog/:idProy",function(req,res){
   console.log(req.params.idProy);
   /*res.render("backlog",{
@@ -455,7 +467,8 @@ tamanio: req.body.tamanio,
 criteriosAceptacion: req.body.criteriosAceptacion,
 dado: req.body.dado,
 cuando: req.body.cuando,
-entonces: req.body.entonces
+entonces: req.body.entonces,
+estado:false
 
 });
 backlog.save().then(function(us){

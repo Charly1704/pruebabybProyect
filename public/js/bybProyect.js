@@ -2,12 +2,13 @@ bybApp = angular.module("bybApp",[]);
 bybApp.controller("backlogCtrl",function($scope,$http,$location){
 
     $scope.historias = [];
+    $scope.releaseBacklog =[];
     $scope.userHistory = {};
     //Conexion a socket normal
-    $scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
+    //$scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
 
     //Conexion a socket segura
-    //$scope.socket = io.connect("https://",{'forceNew':true},{secure:true});
+    $scope.socket = io.connect("https://",{'forceNew':true},{secure:true});
 
 
 $scope.getUserHistory = function(id){
@@ -23,10 +24,10 @@ $scope.getUserHistory = function(id){
         })
     };
 $scope.showEditbacklog = function(id){
-console.log(id);
-$scope.historyToEdit = $scope.historias[id]
-console.log($scope.historyToEdit);
-}
+    console.log(id);
+    $scope.historyToEdit = $scope.historias[id]
+    console.log($scope.historyToEdit);
+};
 
 $scope.editbacklog = function(){
     $http.post("/api/editbacklog",$scope.historyToEdit).success(function(data){
@@ -34,8 +35,8 @@ $scope.editbacklog = function(){
         $scope.socket.emit("editBacklog",$scope.historyToEdit);
     }).error(function(err){
         console.log(String(err))
-    })
-}
+    });
+};
 
 $scope.saveUserHistory = function(id){
     console.log("posteando...");
@@ -50,9 +51,22 @@ $scope.saveUserHistory = function(id){
     })
         //TODO socket.io
     }
+$scope.historyToRelease = function(id){
+    $http.post("/api/userHistoryState/"+id).success(function(data) {
+        console.log(data);
+        $scope.socket.emit("backlogAccepted",data)
+    }).error(function(err) {
+        console.log(String(err));
+    })
+}
      $scope.socket.on("enviarMensajes",function(data){
             $scope.historias = data;
             console.log($scope.historias);
             $scope.$apply();
-     })
+     });
+     $scope.socket.on("agregarRelease",function(data) {
+         $scope.releaseBacklog = data;
+         console.log(data);
+         $scope.$apply();
+     });
 })
