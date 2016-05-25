@@ -72,6 +72,23 @@ io.on('connect',function(socket){
       io.sockets.emit("agregarSprint",sprints);
       
   })
+  socket.on("newSprintToRelease",function(data) {
+      var nuevoSprint = true;
+      console.log("SprintToRelease");
+      console.log(data);
+      for(var val in releaseBacklog){
+        if(releaseBacklog[val]._id==data._id){
+          nuevoSprint = false;
+          releaseBacklog.splice(val,1,data);
+          break;
+        }
+      }
+      if(nuevoSprint){
+        releaseBacklog.push(data);  
+      }
+      
+      io.sockets.emit("agregarRelease",releaseBacklog);
+  })
   socket.emit("enviarMensajes",historias);
   socket.emit("agregarRelease",releaseBacklog);
   socket.emit("agregarSprint",sprints);
@@ -406,6 +423,24 @@ app.get("/editProfile",user.can("anonymousUser"),function(req,res){
 
 
 });
+
+app.get("/api/releaseBacklog/:idProy",function(req, res) {
+    console.log(req.params.idProy);
+    Release
+    .find({proyecto:req.params.idProy})
+    .populate('proyecto')
+    .populate('sprints')
+    .populate({
+      path:'sprints',
+      // Se obtiene los backlogs completos de cada sprint
+      populate:{path:'backlog'}
+    })
+    .exec(function(err,release){
+      if(err)console.log(err);
+      releaseBacklog = release;
+      res.json(release)
+    })
+})
 app.get("/api/sprints/:idProy",function(req, res) {
     console.log(req.params.idProy);
     Sprint
@@ -414,6 +449,7 @@ app.get("/api/sprints/:idProy",function(req, res) {
     .exec(function(err, sprint) {
         if(err)console.log(String(err));
         sprints = sprint;
+        console.log("Buscando sprint");
         console.log(sprint);
         res.json(sprint);
     })
@@ -430,9 +466,6 @@ app.get("/api/backlog/:idProy",function(req, res) {
       console.log(backlog);
       for(var val in backlog) {
          data.push(backlog[val])
-         if(backlog[val].estado){
-           releaseBacklog.push(backlog[val]);
-         }
       }
       historias = backlog;
       res.json(data);
@@ -512,28 +545,70 @@ Backlog.findOneAndUpdate({_id:req.body._id}, nuevosDatos, {upsert:true}, functio
 });
 
 app.post("/api/userHistoryState/:idBacklog",function(req, res) {
-    Backlog.findOneAndUpdate({_id:req.params.idBacklog},{estado:true},function(err,doc){
+    Backlog.findOneAndUpdate({_id:req.params.idBacklog},{estado:true},{'new':true},function(err,updated){
       if(err) console.log(String(err));
       console.log("Backlog agregado a Release");
-      console.log(doc);
-      res.json(doc);
+      console.log(updated);
+      res.json(updated);
     })
 })
-
+app.post("/api/sprintState",function(req, res) {
+    Sprint.findOneAndUpdate({_id:req.body._id},{mandadaAlRelease:true},{'new':true},function(err,updated){
+      if(err) console.log(String(err));
+      res.json(updated)
+    })
+})
 app.post("/api/SprintToRelease",function(req, res) {
     console.log("Enviando al Release");
-    console.log(req.body);
-    var newRelease = new Release({
-      sprints:req.body._id,
-      proyecto:req.body.proyecto
-    });
-    newRelease.save().then(function(doc){
-      res.json(doc);
-      console.log("Se guardo Release");
-      console.log(doc);
-    },function(err){
-      console.log(String(err));
+    Release.count({proyecto:req.body.proyecto},function(err,count){
+      if(err)console.log(err);
+      if(count==0){
+        console.log(req.body);
+        var newRelease = new Release({
+          sprints:req.body._id,
+          proyecto:req.body.proyecto
+        });
+      newRelease.save().then(function(doc){
+        console.log("Se creo nuevo Release");
+        console.log(doc);
+        Release
+        .findOne({_id:doc._id})
+        .populate('proyecto')
+        .populate('sprints')
+        .populate({
+        path:'sprints',
+        // Se obtiene los backlogs completos de cada sprint
+        populate:{path:'backlog'}
+        })
+        .exec(function(err,release){
+          if(err)console.log(err);
+          res.json(release)
+        })
+        
+      },function(err){
+        console.log(String(err));
+    })    
+      }else{
+        Release.findOneAndUpdate({proyecto:req.body.proyecto},{$push:{sprints:req.body._id}},{'new':true},function(err,updated){
+         if(err) console.log(String(err));
+          console.log("Se actualizo Release");
+          Release
+        .findOne({_id:updated._id})
+        .populate('proyecto')
+        .populate('sprints')
+        .populate({
+        path:'sprints',
+        // Se obtiene los backlogs completos de cada sprint
+        populate:{path:'backlog'}
+        })
+        .exec(function(err,release){
+          if(err)console.log(err);
+          res.json(release)
+        })
+        })
+      }
     })
+    
 })
 
 app.post("/api/backlog/:idProy",function(req,res){

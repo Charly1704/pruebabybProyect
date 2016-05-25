@@ -64,7 +64,7 @@ block content
                         h3 Historias de usuario
 
                       div(class="widget-content" style="padding: 20px;")
-                        div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="item in historias")
+                        div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="item in historias" ng-if="!item.estado")
                           a(href="#editarHistoria" role="button" class="btn" data-toggle="modal" ng-click="showEditbacklog($index)")
                             i(class="btn-icon-only icon-edit")      
                           if hayProductOwner 
@@ -95,7 +95,7 @@ block content
                     div(class="widget widget-table action-table" style="margin-top: 10px;")
                       div(class="widget-header")
                         i(class="icon-th-list")
-                        h3 Backlog Release
+                        h3 Release Backlog
                       div(class="widget-content" style="padding: 20px;")
                         div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="item in releaseBacklog")
                           a(href="#editarHistoria" role="button" class="btn" data-toggle="modal" ng-click="showEditbacklog($index)")
@@ -134,7 +134,7 @@ block content
                             input(type="button" value="Crear Sprint" ng-click="crearSprint('#{idProy}')")
                         h3 ID Sprint {{sprint.idSprint}}
                         h3 Tamaño {{sprint.tamanioSprint}}
-                        button(class="btn btn-primary" ng-click="SprintToRelease()") Enviar al Release
+                        button(type="button" class="btn btn-primary" ng-click="sprintToRelease()") Enviar al Release
                         div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="backlog in sprint.backlog")
                           div(class="flipper")
                             div(class="front")

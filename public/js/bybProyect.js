@@ -31,6 +31,11 @@ $scope.getUserHistory = function(id){
     }).error(function(err) {
         console.log(String(err))
     })
+    $http.get("/api/releaseBacklog/"+$scope.idProy).success(function(data) {
+        $scope.releaseBacklog = data;
+    }).error(function(err) {
+        console.log(String(err));
+    })
     };
 $scope.showEditbacklog = function(id){
     console.log(id);
@@ -62,12 +67,13 @@ $scope.saveUserHistory = function(id){
 $scope.historyToRelease = function(id){
     $http.post("/api/userHistoryState/"+id).success(function(data) {
         console.log(data);
-        $scope.socket.emit("backlogAccepted",data)
+        $scope.socket.emit("editBacklog",data)
     }).error(function(err) {
         console.log(String(err));
     })
 }
 $scope.historyToSprint = function(item){
+    if($scope.sprint!=null){
     console.log($scope.sprint.idSprint);
     console.log(item);
     var tamanioTotal = 0;
@@ -78,16 +84,22 @@ $scope.historyToSprint = function(item){
     console.log($scope.sprint.tamanioSprint);
     console.log(item.tamanio);
     if(($scope.sprint.tamanioSprint-tamanioTotal)>=item.tamanio){
+        $scope.historyToRelease(item._id);
         $http.post("/api/historyToSprint/"+$scope.sprint.idSprint,item).success(function(data) {
         console.log(data);
        // $scope.sprint = data;
         console.log($scope.sprint);
        $scope.socket.emit("newSprint",data);
+
     }).error(function(err) {
         console.log(String(err));
     })
     }else{
         $window.alert("No es posible agregar la tarjeta se ha excedido el tamaño del Sprint");
+    }
+        
+    }else{
+        $window.alert("No es posible agregar la tarjeta no se ha creado Sprint")
     }
     
 }
@@ -124,13 +136,22 @@ $scope.addSkill = function(){
          })
      }
 
-
-$scope.SprintToRelease = function(){
+function sprintState(){
+    $http.post("/api/sprintState",$scope.sprint).success(function(data) {
+        console.log(data);
+        $scope.sprint = data;
+    }).error(function(err) {
+        console.log(String(err));
+    })
+}
+$scope.sprintToRelease = function(){
+    sprintState();
     $http.post("/api/SprintToRelease",$scope.sprint).success(function(data) {
         console.log(data);
-        $scope.sprint.mandadaAlRelease = true;
         $scope.haySprint = true;
         $scope.sprint = {};
+        $scope.socket.emit("newSprintToRelease",data);
+        $window.alert("Se ha enviado el sprint al releaseBacklog");
     }).error(function(err) {
         console.log(String(err));
     })
