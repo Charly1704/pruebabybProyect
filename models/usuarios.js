@@ -7,12 +7,21 @@ var usuarioSchema = new Schema();
 var rolSchema = new Schema();
 var proyectosSchema = new Schema();
 var backlogSchema = new Schema();
+var sprintSchema = new Schema();
  usuarioSchema.add({
 id:ObjectId,
 nombre: String,
 apellidoP: String,
 apellidoM: String,
 email: String,
+curp:String,
+rfc:String,
+domicilio:String,
+fechaNacimiento:String,
+habilidades:[{
+    habilidad:String,
+    grado:String
+}],
 contrasena:{type:String, minlength:[6,"El password es muy corto"]/*,validate:{
       validator: function(p){
         return this.confirmarPassword == p;
@@ -48,13 +57,20 @@ backlogSchema.add({
   creadorTarjeta: String,
   narrativa: String,
   prioridad: String,
-  tamanio: String,
+  tamanio: Number,
   criteriosAceptacion: String,
   dado: String,
   cuando: String,
   entonces: String,
   estado:Boolean,
   proyectos:[ {type : mongoose.Schema.ObjectId, ref : 'Proyecto'}]
+});
+
+sprintSchema.add({
+    idSprint:Number,
+    tamanioSprint:Number,
+    backlog:[{type:mongoose.Schema.ObjectId, ref: 'Backlog'}],
+    proyecto:{type:mongoose.Schema.ObjectId,ref:'Proyecto'}
 });
 
 
@@ -77,5 +93,6 @@ usuarioSchema.virtual("nombreCompleto").get(function(){
 module.exports ={
     Usuario: mongoose.model('Usuario',usuarioSchema),
     Backlog: mongoose.model('Backlog',backlogSchema),
-    Proyecto: mongoose.model('Proyecto',proyectosSchema)
+    Proyecto: mongoose.model('Proyecto',proyectosSchema),
+    Sprint: mongoose.model('Sprint',sprintSchema)
 };

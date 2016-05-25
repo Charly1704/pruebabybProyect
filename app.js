@@ -9,10 +9,12 @@ var server = require("http").Server(app);
 var io = require("socket.io")(server)
 var historias = [];
 var releaseBacklog = [];
+var sprints = {};
 var bodyParser = require("body-parser");
 var Usuario = require("./models/usuarios").Usuario;
 var Backlog = require("./models/usuarios").Backlog;
 var Proyecto = require("./models/usuarios").Proyecto;
+var Sprint = require("./models/usuarios").Sprint
 var session = require("express-session");
 var FacebookStrategy = require("passport-facebook").Strategy;
 var TwitterStrategy = require("passport-twitter").Strategy;
@@ -64,8 +66,14 @@ io.on('connect',function(socket){
       releaseBacklog.push(data);
       io.sockets.emit("agregarRelease",releaseBacklog);
   })
+  socket.on("newSprint",function(data) {
+      sprints = data;
+      io.sockets.emit("agregarSprint",sprints);
+      
+  })
   socket.emit("enviarMensajes",historias);
   socket.emit("agregarRelease",releaseBacklog);
+  socket.emit("agregarSprint",sprints);
 })
 
 
@@ -277,6 +285,18 @@ app.get("/signup",function(req, res) {
 
 });
 
+app.get("/profile",user.can("anonymousUser"),function(req,res){
+  
+  console.log("Perfil del usuario");
+    Usuario.findOne({_id:req.session.user},function(err, user) {
+        if(err) throw err;
+        console.log("Se encontro usuario");
+        console.log(user);
+        res.render("profile",{user:user});    
+    })
+
+});
+
 // Se redireciona al Dashboard.
 
 
@@ -310,6 +330,34 @@ app.get("/api/proyectos",user.can("anonymousUser"),function(req, res) {
 });
 })
 
+app.post("/api/saveSkills",function(req, res) {
+  console.log("Guardando habilidades");
+  console.log(req.body)
+    Usuario.findOne({_id:req.session.user},function(err,doc){
+      if(err)throw err;
+      for(var item in req.body){
+        Usuario.findByIdAndUpdate({_id:req.session.user},{$push:{habilidades:req.body[item]}},function(err, user) {
+            if(err)throw err;
+        })
+      }
+      res.json(doc);
+    })
+})
+
+app.post("/api/historyToSprint/:idSprint",function(req, res) {
+    console.log("Mandando tarjeta al Sprint");
+    console.log(req.body);
+    Sprint.findOneAndUpdate({idSprint:req.params.idSprint},{$push:{backlog:req.body._id}},function(err,doc){
+      if(err)console.log(String(err));
+      console.log(doc);
+    })
+    Sprint.findOne({idSprint:req.params.idSprint})
+    .populate('backlog')
+    .exec(function(err,sprint){
+      if(err) console.log(err);
+      res.json(sprint);
+    })
+})
 
 app.get("/proyect",user.can("anonymousUser"),user.can("product-owner"),function(req, res){
     res.render("proyects");
@@ -350,12 +398,6 @@ app.get("/simple-cards",user.can("anonymousUser"),function(req,res){
 })
 
 
-app.get("/profile",user.can("anonymousUser"),function(req,res){
-
-    res.render("profile");
-
-
-});
 
 app.get("/editProfile",user.can("anonymousUser"),function(req,res){
 
@@ -363,7 +405,18 @@ app.get("/editProfile",user.can("anonymousUser"),function(req,res){
 
 
 });
-
+app.get("/api/sprints/:idProy",function(req, res) {
+    console.log(req.params.idProy);
+    Sprint
+    .findOne({proyecto:req.params.idProy})
+    .populate('backlog')
+    .exec(function(err, sprint) {
+        if(err)console.log(String(err));
+        sprints = sprint;
+        console.log(sprint);
+        res.json(sprint);
+    })
+})
 app.get("/api/backlog/:idProy",function(req, res) {
   console.log(req.params.idProy)
   var data = [];
@@ -383,6 +436,22 @@ app.get("/api/backlog/:idProy",function(req, res) {
       historias = backlog;
       res.json(data);
 });
+})
+
+app.post("/api/crearSprint/:idProy",function(req, res) {
+    console.log(req.body);
+    var newSprint = new Sprint ({
+      idSprint:req.body.idSprint,
+      tamanioSprint:req.body.tamanioSprint,
+      backlog:[],
+      proyecto:req.params.idProy
+    })
+    newSprint.save().then(function(doc){
+      res.json(doc);
+    },function(err){
+      console.log(String(err));
+    });
+    
 })
 
 app.get("/backlog/:idProy",user.can("anonymousUser"),function(req,res){
