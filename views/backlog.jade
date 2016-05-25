@@ -134,6 +134,7 @@ block content
                             input(type="button" value="Crear Sprint" ng-click="crearSprint('#{idProy}')")
                         h3 ID Sprint {{sprint.idSprint}}
                         h3 Tamaño {{sprint.tamanioSprint}}
+                        button(class="btn btn-primary" ng-click="SprintToRelease()") Enviar al Release
                         div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="backlog in sprint.backlog")
                           div(class="flipper")
                             div(class="front")

@@ -14,7 +14,8 @@ var bodyParser = require("body-parser");
 var Usuario = require("./models/usuarios").Usuario;
 var Backlog = require("./models/usuarios").Backlog;
 var Proyecto = require("./models/usuarios").Proyecto;
-var Sprint = require("./models/usuarios").Sprint
+var Sprint = require("./models/usuarios").Sprint;
+var Release = require("./models/usuarios").Release;
 var session = require("express-session");
 var FacebookStrategy = require("passport-facebook").Strategy;
 var TwitterStrategy = require("passport-twitter").Strategy;
@@ -347,11 +348,11 @@ app.post("/api/saveSkills",function(req, res) {
 app.post("/api/historyToSprint/:idSprint",function(req, res) {
     console.log("Mandando tarjeta al Sprint");
     console.log(req.body);
-    Sprint.findOneAndUpdate({idSprint:req.params.idSprint},{$push:{backlog:req.body._id}},function(err,doc){
+    Sprint.findOneAndUpdate({$and:[{idSprint:req.params.idSprint},{mandadaAlRelease:false}]},{$push:{backlog:req.body._id}},function(err,doc){
       if(err)console.log(String(err));
       console.log(doc);
     })
-    Sprint.findOne({idSprint:req.params.idSprint})
+    Sprint.findOne({$and:[{idSprint:req.params.idSprint},{mandadaAlRelease:false}]})
     .populate('backlog')
     .exec(function(err,sprint){
       if(err) console.log(err);
@@ -408,7 +409,7 @@ app.get("/editProfile",user.can("anonymousUser"),function(req,res){
 app.get("/api/sprints/:idProy",function(req, res) {
     console.log(req.params.idProy);
     Sprint
-    .findOne({proyecto:req.params.idProy})
+    .findOne({$and:[{proyecto:req.params.idProy},{mandadaAlRelease:false}]})
     .populate('backlog')
     .exec(function(err, sprint) {
         if(err)console.log(String(err));
@@ -444,7 +445,8 @@ app.post("/api/crearSprint/:idProy",function(req, res) {
       idSprint:req.body.idSprint,
       tamanioSprint:req.body.tamanioSprint,
       backlog:[],
-      proyecto:req.params.idProy
+      proyecto:req.params.idProy,
+      mandadaAlRelease:false
     })
     newSprint.save().then(function(doc){
       res.json(doc);
@@ -515,6 +517,22 @@ app.post("/api/userHistoryState/:idBacklog",function(req, res) {
       console.log("Backlog agregado a Release");
       console.log(doc);
       res.json(doc);
+    })
+})
+
+app.post("/api/SprintToRelease",function(req, res) {
+    console.log("Enviando al Release");
+    console.log(req.body);
+    var newRelease = new Release({
+      sprints:req.body._id,
+      proyecto:req.body.proyecto
+    });
+    newRelease.save().then(function(doc){
+      res.json(doc);
+      console.log("Se guardo Release");
+      console.log(doc);
+    },function(err){
+      console.log(String(err));
     })
 })
 

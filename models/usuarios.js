@@ -72,10 +72,14 @@ backlogSchema.add({
 sprintSchema.add({
     idSprint:Number,
     tamanioSprint:Number,
+    mandadaAlRelease:Boolean,
     backlog:[{type:mongoose.Schema.ObjectId, ref: 'Backlog'}],
     proyecto:{type:mongoose.Schema.ObjectId,ref:'Proyecto'}
 });
-
+releaseSchema.add({
+    sprints:[{type:mongoose.Schema.ObjectId,ref:'Sprint'}],
+    proyecto:{type:mongoose.Schema.ObjectId,ref:'Proyecto'}
+})
 
 usuarioSchema.virtual("confirmarPassword").get(function(){
    return this.otroPassword;
@@ -97,5 +101,6 @@ module.exports ={
     Usuario: mongoose.model('Usuario',usuarioSchema),
     Backlog: mongoose.model('Backlog',backlogSchema),
     Proyecto: mongoose.model('Proyecto',proyectosSchema),
-    Sprint: mongoose.model('Sprint',sprintSchema)
+    Sprint: mongoose.model('Sprint',sprintSchema),
+    Release: mongoose.model('Release',releaseSchema)
 };

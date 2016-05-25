@@ -7,7 +7,7 @@ bybApp.controller("backlogCtrl",function($scope,$http,$location,$window){
     $scope.habilidades = [];
     $scope.haySprint = true;
     $scope.datosSprint={};
-    $scope.sprint = {};
+    $scope.sprint = [];
     //Conexion a socket normal
     //$scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
 
@@ -123,18 +123,18 @@ $scope.addSkill = function(){
              console.log(String(err));
          })
      }
-$scope.haySprints =function(){
-    console.log($scope.sprint == {});
-    var contador=0;
-    for(var item in $scope.sprint){
-        console.log($scope.sprint.hasOwnProperty(item))
-        if($scope.sprint.hasOwnProperty(item)){
-            contador++;
-        }
-    }
-    console.log(contador==0);
-    //if($scope.sprint =={})
-}();
+
+
+$scope.SprintToRelease = function(){
+    $http.post("/api/SprintToRelease",$scope.sprint).success(function(data) {
+        console.log(data);
+        $scope.sprint.mandadaAlRelease = true;
+        $scope.haySprint = true;
+        $scope.sprint = {};
+    }).error(function(err) {
+        console.log(String(err));
+    })
+}
      $scope.socket.on("enviarMensajes",function(data){
             $scope.historias = data;
             console.log($scope.historias);
