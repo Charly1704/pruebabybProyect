@@ -8,6 +8,9 @@ var rolSchema = new Schema();
 var proyectosSchema = new Schema();
 var backlogSchema = new Schema();
 var sprintSchema = new Schema();
+var releaseSchema = new Schema();
+
+
  usuarioSchema.add({
 id:ObjectId,
 nombre: String,

@@ -43,7 +43,7 @@ block content
                       input(type="text" class="form-control span4" ng-model="userHistory.entonces" name="entonces" id="entonces" placeholder="Entonces")      
                     div
                       input(type="submit" value="Aceptar" class="btn btn-info")
-                    div(class="alert" style="margin-top: 10px;" ng-show="!userHistorys.length")
+                    div(class="alert" style="margin-top: 10px;" ng-show="historias.length==0")
                       button(type="button" class="close" data-dismiss="alert") ×
                       | No hay historias de usuario
                     // Post-it's de proyectos.
