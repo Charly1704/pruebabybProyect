@@ -50,7 +50,7 @@ app.use(flash());
 
 io.on('connect',function(socket){
   console.log("Se conecto");
-  
+
   socket.on("mensajeNuevo",function(data){
     historias.push(data);
     io.sockets.emit("enviarMensajes",historias)
@@ -70,7 +70,7 @@ io.on('connect',function(socket){
   socket.on("newSprint",function(data) {
       sprints = data;
       io.sockets.emit("agregarSprint",sprints);
-      
+
   })
   socket.on("newSprintToRelease",function(data) {
       var nuevoSprint = true;
@@ -84,9 +84,9 @@ io.on('connect',function(socket){
         }
       }
       if(nuevoSprint){
-        releaseBacklog.push(data);  
+        releaseBacklog.push(data);
       }
-      
+
       io.sockets.emit("agregarRelease",releaseBacklog);
   })
   socket.emit("enviarMensajes",historias);
@@ -304,13 +304,13 @@ app.get("/signup",function(req, res) {
 });
 
 app.get("/profile",user.can("anonymousUser"),function(req,res){
-  
+
   console.log("Perfil del usuario");
     Usuario.findOne({_id:req.session.user},function(err, user) {
         if(err) throw err;
         console.log("Se encontro usuario");
         console.log(user);
-        res.render("profile",{user:user});    
+        res.render("profile",{user:user});
     })
 
 });
@@ -411,6 +411,7 @@ app.get("/simple-cards",user.can("anonymousUser"),function(req,res){
        res.render("home/simple-cards",{
         proyecto:data,
         usuarioActual:req.session.user
+
       });
 })
 })
@@ -486,12 +487,19 @@ app.post("/api/crearSprint/:idProy",function(req, res) {
     },function(err){
       console.log(String(err));
     });
-    
+
 })
 
 app.get("/backlog/:idProy",user.can("anonymousUser"),function(req,res){
   console.log("Entro al backlog")
+  var cierreProyecto;
 var hayProductOwner;
+  Proyecto.findOne({ _id:req.params.idProy }, function (err, estado) {
+  if (err) return handleError(err);
+  console.log("El estado de su proyecto es: ");
+  console.log(estado.estadoProyecto);
+  cierreProyecto = estado.estadoProyecto;
+})
   Proyecto.count({$and:[{_id:req.params.idProy},{productOwner:req.session.user}]},function(error,count){
      if (count == 0) {
           hayProductOwner = false
@@ -512,9 +520,11 @@ var data = [];
       for(var val in backlog) {
          data.push(backlog[val])
       }
+
     res.render("backlog",{
       idProy:req.params.idProy,
-      hayProductOwner:hayProductOwner
+      hayProductOwner:hayProductOwner,
+      cierreProyecto:cierreProyecto
     });
 });
 });
@@ -584,10 +594,10 @@ app.post("/api/SprintToRelease",function(req, res) {
           if(err)console.log(err);
           res.json(release)
         })
-        
+
       },function(err){
         console.log(String(err));
-    })    
+    })
       }else{
         Release.findOneAndUpdate({proyecto:req.body.proyecto},{$push:{sprints:req.body._id}},{'new':true},function(err,updated){
          if(err) console.log(String(err));
@@ -608,7 +618,7 @@ app.post("/api/SprintToRelease",function(req, res) {
         })
       }
     })
-    
+
 })
 app.post("/api/backlogAccepted",function(req, res) {
     console.log(req.body)
@@ -651,7 +661,7 @@ app.post("/api/backlogRejected",function(req, res) {
       if(err)console.log(err);
       res.json(release)
     })
-  })  
+  })
 
 })
 app.post("/api/backlog/:idProy",function(req,res){
@@ -765,7 +775,8 @@ app.post("/dashboard",function(req,res){
     fechaSolicitud:req.body.fechaSolicitud,
     fechaArranque:req.body.fechaArranque,
     descripcion:req.body.descripcion,
-    proyectManager:req.session.user
+    proyectManager:req.session.user,
+    estadoProyecto: false
   });
   proyecto.save().then(function(proj){
     console.log(proj._id);
@@ -841,6 +852,19 @@ app.post("/delProject/:idProy", function(req, res) {
     res.redirect("/dashboard");
 
 });
+
+});
+
+
+app.post("/cerrarProyecto/:idProy",function(req,res){
+  console.log(req.params.idProy);
+  Proyecto.findOneAndUpdate({_id:req.params.idProy},{estadoProyecto:true},function(err,updated){
+    if(err) console.log(String(err));
+    console.log("El proyecto fue cerrado");
+    console.log(updated);
+      res.redirect("/dashboard");
+  })
+
 
 });
 

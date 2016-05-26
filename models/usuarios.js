@@ -48,7 +48,7 @@ proyectosSchema.add({
    proyectManager: {type : mongoose.Schema.ObjectId, ref : 'Usuario'},
    productOwner: {type : mongoose.Schema.ObjectId, ref : 'Usuario'},
    equipoInvolucdrado: [{ type:mongoose.Schema.ObjectId ,ref: 'Usuario'}],
-
+   estadoProyecto: Boolean
 });
 
 

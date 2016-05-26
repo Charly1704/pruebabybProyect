@@ -9,10 +9,10 @@ bybApp.controller("backlogCtrl",function($scope,$http,$location,$window){
     $scope.datosSprint={};
     $scope.sprint = [];
     //Conexion a socket normal
-    //$scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
+    $scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
 
     //Conexion a socket segura
-    $scope.socket = io.connect("https://",{'forceNew':true},{secure:true});
+    //$scope.socket = io.connect("https://",{'forceNew':true},{secure:true});
 
 
 $scope.getUserHistory = function(id){
@@ -99,11 +99,11 @@ $scope.historyToSprint = function(item){
     }else{
         $window.alert("No es posible agregar la tarjeta se ha excedido el tamaño del Sprint");
     }
-        
+
     }else{
         $window.alert("No es posible agregar la tarjeta no se ha creado Sprint")
     }
-    
+
 }
 $scope.backlogAccepted = function(state,id){
     console.log(state+" "+id);
@@ -126,7 +126,7 @@ $scope.backlogAccepted = function(state,id){
     }).error(function(err) {
         console.log(String(err));
     })
-    
+
 }
 $scope.backlogRejected = function(state,item,idSprint){
     console.log(state+" "+item._id+" "+idSprint)
@@ -141,7 +141,7 @@ $scope.backlogRejected = function(state,item,idSprint){
     }).error(function(err) {
         console.log(String(err));
     })
-    
+
 }
 $scope.addSkill = function(){
          $scope.habilidades.push({habilidad:$scope.skills.habilidad,grado:$scope.skills.grado});
@@ -162,7 +162,7 @@ $scope.addSkill = function(){
                 console.log(data);
             }).error(function(err) {
                 console.log(String(err));
-            })    
+            })
          }
      }
      $scope.crearSprint = function(idProy){
