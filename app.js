@@ -545,7 +545,7 @@ Backlog.findOneAndUpdate({_id:req.body._id}, nuevosDatos, {upsert:true}, functio
 });
 
 app.post("/api/userHistoryState/:idBacklog",function(req, res) {
-    Backlog.findOneAndUpdate({_id:req.params.idBacklog},{estado:true},{'new':true},function(err,updated){
+    Backlog.findOneAndUpdate({_id:req.params.idBacklog},{estado:!req.body.estado},{'new':true},function(err,updated){
       if(err) console.log(String(err));
       console.log("Backlog agregado a Release");
       console.log(updated);
@@ -610,7 +610,50 @@ app.post("/api/SprintToRelease",function(req, res) {
     })
     
 })
+app.post("/api/backlogAccepted",function(req, res) {
+    console.log(req.body)
+    Backlog.findOneAndUpdate({_id:req.body._id},{estadoAprobadaRechazada:req.body.estadoAprobadaRechazada},{'new':true},function(err, doc) {
+        if(err)console.log(String(err));
+        console.log(doc);
+        res.json(doc);
+    })
+})
+app.post("/api/backlogRejected",function(req, res) {
+    console.log(req.body)
+    var idBacklog = req.body.idBacklog;
 
+  Sprint.findOne({_id:req.body.idSprint},function(err, doc) {
+      if(err)console.log(err);
+      console.log("Eliminando backlog de Sprint")
+      console.log(idBacklog)
+      for(var item in doc.backlog){
+        if(doc.backlog[item]==idBacklog){
+          doc.backlog.splice(item,1);
+          break;
+        }
+      }
+      console.log(doc.backlog)
+    Sprint.findOneAndUpdate({_id:doc._id},doc,function(err, updated) {
+        if(err)console.log(String(err));
+        console.log("Nuevo Sprint");
+        console.log(updated);
+    })
+       Release
+      .findOne({proyecto:doc.proyecto})
+      .populate('proyecto')
+      .populate('sprints')
+      .populate({
+      path:'sprints',
+      // Se obtiene los backlogs completos de cada sprint
+      populate:{path:'backlog'}
+    })
+    .exec(function(err,release){
+      if(err)console.log(err);
+      res.json(release)
+    })
+  })  
+
+})
 app.post("/api/backlog/:idProy",function(req,res){
   console.log(req.params.idProy);
   /*res.render("backlog",{
@@ -630,7 +673,8 @@ criteriosAceptacion: req.body.criteriosAceptacion,
 dado: req.body.dado,
 cuando: req.body.cuando,
 entonces: req.body.entonces,
-estado:false
+estado:false,
+estadoAprobadaRechazada:"pendiente"
 
 });
 backlog.save().then(function(us){

@@ -64,9 +64,11 @@ $scope.saveUserHistory = function(id){
     console.log(String(err));
     })
     }
-$scope.historyToRelease = function(id){
-    $http.post("/api/userHistoryState/"+id).success(function(data) {
+$scope.historyToRelease = function(item){
+    //item.estado = !item.estado;
+    $http.post("/api/userHistoryState/"+item._id,item).success(function(data) {
         console.log(data);
+        console.log("El valor de la tarjeta es:"+ data.estado)
         $scope.socket.emit("editBacklog",data)
     }).error(function(err) {
         console.log(String(err));
@@ -84,7 +86,7 @@ $scope.historyToSprint = function(item){
     console.log($scope.sprint.tamanioSprint);
     console.log(item.tamanio);
     if(($scope.sprint.tamanioSprint-tamanioTotal)>=item.tamanio){
-        $scope.historyToRelease(item._id);
+        $scope.historyToRelease(item);
         $http.post("/api/historyToSprint/"+$scope.sprint.idSprint,item).success(function(data) {
         console.log(data);
        // $scope.sprint = data;
@@ -101,6 +103,44 @@ $scope.historyToSprint = function(item){
     }else{
         $window.alert("No es posible agregar la tarjeta no se ha creado Sprint")
     }
+    
+}
+$scope.backlogAccepted = function(state,id){
+    console.log(state+" "+id);
+    var backlogChanges = {
+        _id:id,
+        estadoAprobadaRechazada:state
+    };
+    $http.post("/api/backlogAccepted",backlogChanges).success(function(data) {
+        console.log(data);
+        for(var item in $scope.releaseBacklog[0].sprints){
+            for(var val in $scope.releaseBacklog[0].sprints[item].backlog){
+                var backlog = $scope.releaseBacklog[0].sprints[item].backlog;
+                if(data._id==backlog[val]._id){
+                    backlog.splice(val,1,data);
+                    break;
+                }
+            }
+        }
+        $scope.socket.emit("editBacklog",data);
+    }).error(function(err) {
+        console.log(String(err));
+    })
+    
+}
+$scope.backlogRejected = function(state,item,idSprint){
+    console.log(state+" "+item._id+" "+idSprint)
+    var body = {
+        idSprint:idSprint,
+        idBacklog:item._id
+    }
+    $scope.historyToRelease(item);
+    $http.post("/api/backlogRejected/",body).success(function(data) {
+        console.log(data);
+        $scope.socket.emit("newSprintToRelease",data);
+    }).error(function(err) {
+        console.log(String(err));
+    })
     
 }
 $scope.addSkill = function(){

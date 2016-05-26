@@ -26,7 +26,7 @@ block content
           each user in users
             tbody
               tr
-                td #{user.nombreCompleto} 
+                td #{user.nombreCompleto}
                 td(class="td-actions")
                   form(action="/agregarDesarrolador/#{user._id}/#{idProy}", method="POST")
                     input(type="submit" class="btn btn-primary" value="agregar" name="agregarDes")

@@ -65,6 +65,7 @@ backlogSchema.add({
   dado: String,
   cuando: String,
   entonces: String,
+  estadoAprobadaRechazada: String,
   estado:Boolean,
   proyectos:[ {type : mongoose.Schema.ObjectId, ref : 'Proyecto'}]
 });
