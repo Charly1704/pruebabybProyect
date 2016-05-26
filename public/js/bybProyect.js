@@ -144,7 +144,11 @@ function sprintState(){
         console.log(String(err));
     })
 }
+
 $scope.sprintToRelease = function(){
+    if($scope.sprint.backlog.length == 0){
+        $window.alert("Es necesario incluir historias de usuario para poder enviar el Sprint al Release Backlog")
+    }else{
     sprintState();
     $http.post("/api/SprintToRelease",$scope.sprint).success(function(data) {
         console.log(data);
@@ -156,6 +160,7 @@ $scope.sprintToRelease = function(){
     }).error(function(err) {
         console.log(String(err));
     })
+    }
 }
      $scope.socket.on("enviarMensajes",function(data){
             $scope.historias = data;
