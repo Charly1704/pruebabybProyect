@@ -98,10 +98,13 @@ block content
                           div(class="widget-header")
                             i(class="icon-th-list")
                             h3 Sprint {{item.idSprint}} Tamaño: {{item.tamanioSprint}}
+                            button(type="button" class="btn btn-success" ng-click="checkSprint(item._id)" ng-if="!item.aprobado") Aprobar Sprint
+                          div(class="alert alert-success" role="alert" ng-if="item.aprobado") El Sprint fue aprobado
+                          div(class="alert alert-info" role="alert" ng-if="!item.aprobado") Sprint pendiente de validacion
                           div(class="widget-content" style="padding: 20px;")
                             div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="backlog in item.backlog")
-                              if hayProductOwner
-                                a(role="button" class="btn" ng-click="backlogAccepted('aceptada',backlog._id)")
+                              div(ng-if="'#{hayProductOwner}' && !item.aprobado")  
+                                a(role="button" class="btn" ng-click="backlogAccepted('aceptada',backlog._id,item._id)")
                                   i(class="btn-icon-only icon-ok-sign")
                                 a(role="button" class="btn" ng-click="backlogRejected('rechazada',backlog,item._id)")
                                   i(class="btn-icon-only icon-remove")

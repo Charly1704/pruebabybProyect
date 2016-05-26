@@ -58,12 +58,12 @@ block content
               p Habilidades:
               each habilidad in user.habilidades  
                 ul
-                  li Habilidad: #{habilidad.habilidad} Nivel : #{habilidad.grado} 
+                  li Habilidad: #{habilidad.habilidad} #{habilidad.grado} 
             else
               p Habilidades: No tienes registradas habilidades
-                a(href="/editProfile")
-                  p
-                    button(class="btn btn-primary") Editar Habilidades
+            a(href="/editProfile")
+              p
+                button(class="btn btn-primary") Editar Habilidades
         div(class="thumbnail" style="text-align:center")
             p Recuerda que puedas editar tu perfil, presionando el siguiente enlace
               p

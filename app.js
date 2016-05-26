@@ -471,7 +471,26 @@ app.get("/api/backlog/:idProy",function(req, res) {
       res.json(data);
 });
 })
-
+app.post("/api/saveSprint/:idSprint",function(req, res) {
+    Sprint.findOneAndUpdate({_id:req.params.idSprint},{aprobado:true},function(err, doc) {
+        if(err)console.log(err);
+        console.log(doc);
+        Release
+        .findOne({proyecto:doc.proyecto})
+        .populate('proyecto')
+        .populate('sprints')
+        .populate({
+        path:'sprints',
+        // Se obtiene los backlogs completos de cada sprint
+        populate:{path:'backlog'}
+        })
+        .exec(function(err,release){
+          if(err)console.log(err);
+          res.json(release)
+        })
+    })
+    
+})
 app.post("/api/crearSprint/:idProy",function(req, res) {
     console.log(req.body);
     var newSprint = new Sprint ({
@@ -479,7 +498,8 @@ app.post("/api/crearSprint/:idProy",function(req, res) {
       tamanioSprint:req.body.tamanioSprint,
       backlog:[],
       proyecto:req.params.idProy,
-      mandadaAlRelease:false
+      mandadaAlRelease:false,
+      aprobado:false
     })
     newSprint.save().then(function(doc){
       res.json(doc);
