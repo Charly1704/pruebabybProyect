@@ -38,5 +38,7 @@ block content
                                     tr(ng-repeat="habilidad in habilidades track by $index")
                                         td {{habilidad.habilidad}}
                                         td {{habilidad.grado}}
+                            
+                            button(class="btn btn-success btn-lg" type="submit" ng-click="saveSkills()") Guardar Habilidades
                             a(href="/profile")
-                                button(class="btn btn-success btn-lg" type="submit" ng-click="saveSkills()") Guardar Habilidades
+                                button(class="btn btn-default btn-lg" type="button") Regresar

@@ -74,6 +74,7 @@ sprintSchema.add({
     idSprint:Number,
     tamanioSprint:Number,
     mandadaAlRelease:Boolean,
+    aprobado:Boolean,
     backlog:[{type:mongoose.Schema.ObjectId, ref: 'Backlog'}],
     proyecto:{type:mongoose.Schema.ObjectId,ref:'Proyecto'}
 });

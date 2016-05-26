@@ -8,6 +8,8 @@ bybApp.controller("backlogCtrl",function($scope,$http,$location,$window){
     $scope.haySprint = true;
     $scope.datosSprint={};
     $scope.sprint = [];
+    $scope.closeSprint = false;
+    $scope.sprintsAceptados = [];
     //Conexion a socket normal
     $scope.socket = io.connect("http://",{'forceNew':true},{secure:true});
 
@@ -92,7 +94,6 @@ $scope.historyToSprint = function(item){
        // $scope.sprint = data;
         console.log($scope.sprint);
        $scope.socket.emit("newSprint",data);
-
     }).error(function(err) {
         console.log(String(err));
     })
@@ -100,12 +101,18 @@ $scope.historyToSprint = function(item){
         $window.alert("No es posible agregar la tarjeta se ha excedido el tamaño del Sprint");
     }
 
+
+    }else{
+        $window.alert("No es posible agregar la tarjeta no se ha creado Sprint")
+    }
+
+
     }else{
         $window.alert("No es posible agregar la tarjeta no se ha creado Sprint")
     }
 
 }
-$scope.backlogAccepted = function(state,id){
+$scope.backlogAccepted = function(state,id,idSprint){
     console.log(state+" "+id);
     var backlogChanges = {
         _id:id,
@@ -117,6 +124,7 @@ $scope.backlogAccepted = function(state,id){
             for(var val in $scope.releaseBacklog[0].sprints[item].backlog){
                 var backlog = $scope.releaseBacklog[0].sprints[item].backlog;
                 if(data._id==backlog[val]._id){
+
                     backlog.splice(val,1,data);
                     break;
                 }
@@ -126,6 +134,8 @@ $scope.backlogAccepted = function(state,id){
     }).error(function(err) {
         console.log(String(err));
     })
+
+    acceptSprint(idSprint);
 
 }
 $scope.backlogRejected = function(state,item,idSprint){
@@ -149,17 +159,18 @@ $scope.addSkill = function(){
          $scope.skills.habilidad = '';
          $scope.skills.grado = '';
      }
-     $scope.saveSkills = function(){
-         var newSkills = {
-             habilidades:$scope.habilidades
-         }
-         if($scope.habilidades.length>0){
-            $http({
-                url:"/api/saveSkills",
-                method:'POST',
-                data:$scope.habilidades
+$scope.saveSkills = function(){
+    var newSkills = {
+        habilidades:$scope.habilidades
+    }
+    if($scope.habilidades.length>0){
+        $http({
+            url:"/api/saveSkills",
+            method:'POST',
+            data:$scope.habilidades
             }).success(function(data) {
                 console.log(data);
+                $window.alert("Habilidades guardadas con exito!")
             }).error(function(err) {
                 console.log(String(err));
             })
@@ -184,7 +195,43 @@ function sprintState(){
         console.log(String(err));
     })
 }
+function acceptSprint(idSprint){
+    console.log("AceptandoSprint")
+    var noTarjetas = 0;
+    var contador = 0;
+    for(var item in $scope.releaseBacklog[0].sprints){
+        if($scope.releaseBacklog[0].sprints[item]._id==idSprint){
+            for(var val in $scope.releaseBacklog[0].sprints[item].backlog){
+                console.log("Estado:"+$scope.releaseBacklog[0].sprints[item].backlog[val].estadoAprobadaRechazada)
+                if($scope.releaseBacklog[0].sprints[item].backlog[val].estadoAprobadaRechazada !="pendiente"){
+                    contador++;
+                }
+                noTarjetas++;
+            }
+        }
 
+    }
+    console.log("El numero de tarjetas son:"+noTarjetas);
+    console.log("El numero de tarjetas aprobadas son:"+contador);
+    if(noTarjetas==contador && noTarjetas!=0){
+        return true;
+    }
+    return false;
+}
+
+$scope.checkSprint = function(id){
+    var isReady = acceptSprint(id);
+    console.log("El sprint esta listo?"+isReady);
+    if(isReady){
+        $http.post("/api/saveSprint/"+id).success(function(data) {
+            $scope.socket.emit("newSprintToRelease",data);
+        }).error(function(err) {
+            console.log(String(err));
+        })
+    }else{
+        $window.alert("Se deben de validar todas las tarjetas para aprobar el Sprint");
+    }
+}
 $scope.sprintToRelease = function(){
     if($scope.sprint.backlog.length == 0){
         $window.alert("Es necesario incluir historias de usuario para poder enviar el Sprint al Release Backlog")

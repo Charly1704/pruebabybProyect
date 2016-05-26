@@ -78,6 +78,7 @@ block content
                                     p Cuando: {{item.cuando}}
                                     p Entonces: {{item.entonces}}
 
+<<<<<<< HEAD
                       div(class="widget widget-table action-table" style="margin-top: 10px;")
                         div(class="widget-header")
                           i(class="icon-th-list")
@@ -152,6 +153,84 @@ block content
                                     p Cuando: {{backlog.cuando}}
                                     p Entonces: {{backlog.entonces}}
                             
+=======
+                    div(class="widget widget-table action-table" style="margin-top: 10px;")
+                      div(class="widget-header")
+                        i(class="icon-th-list")
+                        h3 Release Backlog
+                      div(class="widget-content" style="padding: 20px;")
+                        div(class="widget widget-table action-table" style="margin-top: 10px;" ng-repeat="item in releaseBacklog[0].sprints")
+                          div(class="widget-header")
+                            i(class="icon-th-list")
+                            h3 Sprint {{item.idSprint}} Tamaño: {{item.tamanioSprint}}
+                            button(type="button" class="btn btn-success" ng-click="checkSprint(item._id)" ng-if="!item.aprobado") Aprobar Sprint
+                          div(class="alert alert-success" role="alert" ng-if="item.aprobado") El Sprint fue aprobado
+                          div(class="alert alert-info" role="alert" ng-if="!item.aprobado") Sprint pendiente de validacion
+                          div(class="widget-content" style="padding: 20px;")
+                            div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="backlog in item.backlog")
+                              div(ng-if="'#{hayProductOwner}' && !item.aprobado")  
+                                a(role="button" class="btn" ng-click="backlogAccepted('aceptada',backlog._id,item._id)")
+                                  i(class="btn-icon-only icon-ok-sign")
+                                a(role="button" class="btn" ng-click="backlogRejected('rechazada',backlog,item._id)")
+                                  i(class="btn-icon-only icon-remove")
+                              input(role="button" class="btn btn-info" value="{{backlog.estadoAprobadaRechazada}}") 
+                              div(class="flipper")
+                                div(class="front")
+                                  ul(style="list-style:none; overflow: hidden; padding: 1em; margin: 1em; float: left;")
+                                    li(sytle="list-style:none; margin: 1em; float: left;")
+                                      h2 {{backlog.narrativa}}
+                                      p Como: {{backlog.como}}
+                                      p De tal manera: {{backlog.detalmanera}}
+                                      p Quiero: {{backlog.quiero}}
+                                      p Creador {{backlog.creadorTarjeta}}
+                                      p Prioridad {{backlog.prioridad}}
+                                      p Tamaño {{backlog.tamanio}}
+                                div(class="back")
+                                  ul(style="list-style:none; overflow: hidden; padding: 1em; margin: 1em; float: left;")
+                                    li(sytle="list-style:none; margin: 1em; float: left;")
+                                      h2 Critérios de aceptación 
+                                      p {{backlog.criteriosAceptacion}}
+                                      p Dado: {{backlog.dado}}
+                                      p Cuando: {{backlog.cuando}}
+                                      p Entonces: {{backlog.entonces}}
+                                  
+                    div(class="widget widget-table action-table" style="margin-top: 10px;")
+                      div(class="widget-header")
+                        i(class="icon-th-list")
+                        h3 Sprints 
+                      div(class="widget-content" style="padding: 20px;")
+                        div(class="form-group" ng-show="haySprint")
+                          form()
+                            label Tamaño
+                            input(type="text" placeholder="Tamaño" ng-model="datosSprint.tamanioSprint")
+                            label ID
+                            input(type="text" placeholder="ID" ng-model="datosSprint.idSprint")
+                            input(type="button" value="Crear Sprint" ng-click="crearSprint('#{idProy}')")
+                        h3 ID Sprint {{sprint.idSprint}}
+                        h3 Tamaño {{sprint.tamanioSprint}}
+                        button(type="button" class="btn btn-primary" ng-click="sprintToRelease()") Enviar al Release
+                        div(class="flip-container" ntouchstart="this.classList.toggle('hover');" ng-repeat="backlog in sprint.backlog" ng-if="!sprint.mandadaAlRelease")
+                          div(class="flipper")
+                            div(class="front")
+                              ul(style="list-style:none; overflow: hidden; padding: 1em; margin: 1em; float: left;")
+                                li(sytle="list-style:none; margin: 1em; float: left;")
+                                  h2 {{backlog.narrativa}}
+                                  p Como: {{backlog.como}}
+                                  p De tal manera: {{backlog.detalmanera}}
+                                  p Quiero: {{backlog.quiero}}
+                                  p Creador {{backlog.creadorTarjeta}}
+                                  p Prioridad {{backlog.prioridad}}
+                                  p Tamaño {{backlog.tamanio}}
+                            div(class="back")
+                              ul(style="list-style:none; overflow: hidden; padding: 1em; margin: 1em; float: left;")
+                                li(sytle="list-style:none; margin: 1em; float: left;")
+                                  h2 Critérios de aceptación 
+                                  p {{backlog.criteriosAceptacion}}
+                                  p Dado: {{backlog.dado}}
+                                  p Cuando: {{backlog.cuando}}
+                                  p Entonces: {{backlog.entonces}}
+                          
+>>>>>>> ec6cea87dc5aac5ecc2d3a989a4f34e9c27da629
 
                                 
     div(id="editarHistoria" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true")
