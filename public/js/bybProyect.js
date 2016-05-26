@@ -149,6 +149,7 @@ $scope.sprintToRelease = function(){
     $http.post("/api/SprintToRelease",$scope.sprint).success(function(data) {
         console.log(data);
         $scope.haySprint = true;
+        $scope.sprint.mandadaAlRelease = true;
         $scope.sprint = {};
         $scope.socket.emit("newSprintToRelease",data);
         $window.alert("Se ha enviado el sprint al releaseBacklog");
